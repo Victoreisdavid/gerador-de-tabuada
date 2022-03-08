@@ -29,7 +29,7 @@ export default function Main() {
             const result = generate(min, max)
             const numbers = Object.keys(result)
             const canvas = document.createElement("canvas")
-            canvas.width = 850
+            canvas.width = 950
             canvas.height = 400
             image_container.appendChild(canvas)
             let y = 25
@@ -39,10 +39,11 @@ export default function Main() {
             const ctx = canvas.getContext("2d")
             ctx.fillStyle = "black"
             for (const number of numbers) {
-                canvas.height =  canvas.height + 82
+                canvas.height += 96
             }
+            canvas.height -= 255
             for (const number of numbers) {
-                ctx.font = "25px Arial"
+                ctx.font = "30px Arial"
                 let t = ""
                 const multiplicators = Object.keys(result[number])
                 for (const multiplicator of multiplicators) {
@@ -54,7 +55,7 @@ export default function Main() {
                     if(!first_y) {
                         first_y = y
                     }
-                    y += 25
+                    y += 30
                 }
                 if(rows >= 3) {
                     rows = 0
@@ -95,7 +96,7 @@ export default function Main() {
             </header>
             <main>
                 <p>Abaixo será gerado uma imagem, você pode imprimir ela.</p>
-                <p>OBS: não coloque números absurdamente altos, seu computador pode chorar kk</p>
+                <br/>
                 <div id="image-container"/>
             </main>
         </>
