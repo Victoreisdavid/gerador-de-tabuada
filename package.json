@@ -1,0 +1,25 @@
+{
+  "name": "gerador-de-tabuada",
+  "version": "1.0.0",
+  "description": "Gerador de tabuada customizavel.",
+  "main": "index.js",
+  "scripts": {
+    "next-dev": "next dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Victoreisdavid/gerador-de-tabuada.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Victoreisdavid/gerador-de-tabuada/issues"
+  },
+  "homepage": "https://github.com/Victoreisdavid/gerador-de-tabuada#readme",
+  "dependencies": {
+    "next": "^12.1.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  }
+}
