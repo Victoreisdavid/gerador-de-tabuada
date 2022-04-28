@@ -91,3 +91,22 @@ canvas {
     display: block;
     margin: auto;
 }
+
+#loading {
+    margin: auto;
+    border: 5px solid var(--color4);
+    border-top: 5px solid var(--color1);
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    animation: spin 1.3s forwards infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

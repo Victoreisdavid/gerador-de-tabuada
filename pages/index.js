@@ -1,6 +1,12 @@
 import Head from "next/head";
 import { useEffect } from "react";
 
+/**
+ * Gera uma tabuada
+ * @param {Number} start Início da tabuada 
+ * @param {Number} end Fim da tabuada
+ * @returns {Object} Objeto da tabuada
+ */
 function generate(start, end) {
     const output = {}
     let currentNumber = Number(start)
@@ -19,102 +25,96 @@ export default function Main() {
     useEffect(() => {
         const image_container = document.querySelector("#image-container")
         const generateButton = document.querySelector("#generate")
-        generateButton.addEventListener("click", () => {
+        const delay = () => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    return resolve()
+                }, 50)
+            })
+        }
+        generateButton.addEventListener("click", async () => {
             let Time = Date.now()
-            const min = document.querySelector("#min").value
-            const max = document.querySelector("#max").value
-            if (min > max) {
-                return alert("O valor mínimo não pode ser maior do que o valor máximo.")
-            }
+            const min = Number(document.querySelector("#minimum")?.value) || 1
+            const max = Number(document.querySelector("#maximum")?.value) || 10
+            const fontSize = Number(document.querySelector("#font-size")?.value) || 20
+            const fontColor = document.querySelector("#font-color")?.value || "#22223b"
             if(max > 500) {
-                return alert("O máximo permitido é 500")
+                return alert("O valor máximo permitido é 500, acima disso a imagem pode bugar.")
             }
-            image_container.innerHTML = ""
-            const result = generate(min, max)
-            const numbers = Object.keys(result)
+            if(max < min) {
+                return alert("O valor mínimo é maior que o máximo")
+            }
+            image_container.innerHTML = "<div id=\"loading\"/>"
+            await delay() // Para evitar que o navegador trave
             const canvas = document.createElement("canvas")
-            canvas.width = 1150
-            canvas.height = 0
-            image_container.appendChild(canvas)
-            let y = 25
-            let x = 95
-            let rows = 0
-            let first_y = null
             const ctx = canvas.getContext("2d")
-            ctx.fillStyle = "black"
-            let elements = 0
-            let underelements = 0
-            if(numbers.length <= 3) {
-                canvas.height = 330
-            } else {
-                for (const number of numbers) {
-                    if(rows > 3) {
-                        rows = 0
-                        elements += 1
-                        //alert(number)
-                    } else {
-                        rows += 1
-                        underelements += 1
-                    }
-                }
-                rows = 0
-                //canvas.height = 330 * elements + 30 + 30
-            }
-            /*if(max > 5) {
-                canvas.height -= 275
-            }*/
+            ctx.font = `${fontSize}px Fredoka`
             const texts = []
-            let image_size = 0
-            for (const number of numbers) {
-                ctx.font = "35px Fredoka"
-                let t = ""
-                const multiplicators = Object.keys(result[number])
-                for (const multiplicator of multiplicators) {
-                    const m_result = result[number][multiplicator]
-                    const text = `${number} x ${multiplicator} = ${m_result}`
-                    t = text
-                    /*if (y > canvas.height) {
-                        console.log(text, " Esse saiu pra fora")
-                
-                        ctx.font = "30px Fredoka"
-                    }
-                    ctx.fillText(text, x, y)*/
+            const operations = generate(min, max)
+            const keys = Object.keys(operations)
+
+            /* Variáveis usadas na hora de posicionar o texto */
+            let x = 0
+            let y = 0
+            let firstY = null
+
+            let rows = 0
+            let canvasHeight = 0
+            let canvasWidth = 0
+
+            /* Colocando os resultados na variável texts */
+            for(const key of keys) {
+                const results = operations[key]
+                const resultsKeys = Object.keys(results)
+                if(!firstY) {
+                    firstY = y
+                }
+                let t = null
+                for(const resultKey of resultsKeys) {
+                    const result = operations[key][resultKey]
+                    const txt = `${key} x ${resultKey} = ${result}`
+                    t = txt
+                    y += fontSize + 20
+                    canvasHeight = y + 25
                     texts.push({
-                        text: text,
+                        txt: txt,
                         x: x,
                         y: y
                     })
-                    if(!first_y) {
-                        first_y = y
-                        image_size += 330 + 45
-                    }
-                    y += 35
-                    if(image_size < y) {
-                        image_size += 30
-                    }
                 }
-                if(rows >= 3) {
-                    rows = 0
-                    x = 95
-                    first_y = null
-                    y += 55
-                } else {
-                    x += ctx.measureText(t).width + 15
-                    y = first_y
+                if(rows < 3) {
                     rows += 1
+                    y = firstY
+                    x += ctx.measureText(t).width + fontSize
+                    if(x + fontSize >= canvasWidth) {
+                        canvasWidth += (ctx.measureText(t).width + fontSize) * 2
+                    }
+                } else {
+                    rows = 0
+                    x = 0
+                    y += fontSize
+                    firstY = null
                 }
             }
-            canvas.height = image_size
-            ctx.font = "35px Fredoka"
 
-            for (const txt of texts) {
-                ctx.fillText(txt.text, txt.x, txt.y)
+            /* Definindo altura e largura */
+            canvas.height = canvasHeight
+            canvas.width = canvasWidth
+
+            /* Escrevendo na imagem */
+            ctx.font = `${fontSize}px Fredoka`
+            ctx.fillStyle = fontColor
+            for(const txt of texts) {
+                ctx.fillText(txt.txt, txt.x, txt.y)
             }
             Time = Date.now() - Time
-            const paragraph = document.createElement("p")
+            const p = document.createElement("p")
             let FormattedTime = (Time % 60000) / 1000 + " segundos"
-            paragraph.innerHTML = `Tempo levado para gerar a imagem: <strong>${FormattedTime}</strong>`
-            image_container.appendChild(paragraph)
+            p.textContent = `Tempo levado para processar a imagem: ${FormattedTime}`
+            image_container.innerHTML = ""
+            image_container.appendChild(canvas)
+            image_container.appendChild(p)
+
         })
     }, [])
     return (
@@ -128,13 +128,21 @@ export default function Main() {
                 <h1>Gerador de tabuada</h1>
                 <p>Preparado para gerar sua tabuada?</p>
                 <div id="inputs">
-                    <input type="number" defaultValue={1} id="min" />
+                    <input type="number" defaultValue={20} id="font-size" />
+                    <div className="placeholder">
+                        Tamanho da fonte
+                    </div>
+                    <input type="text" defaultValue="#22223b" id="font-color" />
+                    <div className="placeholder">
+                        Cor da fonte
+                    </div>
+                    <input type="number" defaultValue={1} id="minimum" />
                     <div className="placeholder">
                         Início
                     </div>
-                    <input type="number" defaultValue={10} id="max" max={600}/>
+                    <input type="number" defaultValue={10} id="maximum" />
                     <div className="placeholder">
-                        Fim
+                        Final
                     </div>
                 </div>
                 <button id="generate">
@@ -142,7 +150,7 @@ export default function Main() {
                 </button>
             </header>
             <main>
-                <p>Abaixo será gerado uma imagem, você pode imprimir ela.</p>
+                <p>Você pode imprimir a imagem gerada abaixo</p>
                 <br/>
                 <div id="image-container"/>
             </main>
