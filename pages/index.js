@@ -126,7 +126,7 @@ export default function Main() {
             </Head>
             <header>
                 <h1>Gerador de tabuada</h1>
-                <p>Preparado para gerar sua tabuada?</p>
+                <p>Personalize sua tabuada abaixo</p>
                 <div id="inputs">
                     <input type="number" defaultValue={20} id="font-size" />
                     <div className="placeholder">
