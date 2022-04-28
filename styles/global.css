@@ -49,22 +49,23 @@ button {
     cursor: pointer;
 }
 
-input {
+input[type=number], input[type=text] {
+    width: 100%;
     display: block;
+    margin-left: -7px;
     padding: 12px;
-    margin-right: 10px;
     border: none;
     border-radius: 6px;
     box-shadow: 0px 0px 2px 0px var(--color1);
     background-color: #f3f3f3;
 }
 
-input:focus {
+input[type=number]:focus, input[type=text]:focus {
     outline: none;
 }
 
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
@@ -73,13 +74,23 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
+input[type=checkbox] {
+    margin-right: 10px;
+    transform: scale(1.5);
+    box-shadow: none;
+}
+
+input[type=checkbox]:focus {
+    outline: none;
+    box-shadow: none;
+}
 
 .placeholder {
     width: fit-content;
+    margin-left: 4px;
     transform: translateY(-252%);
     background-color: var(--color3);
     color: var(--color4);
-    margin-left: 8px;
     font-size: 1.1em;
 }
 
@@ -90,6 +101,11 @@ main p {
 canvas {
     display: block;
     margin: auto;
+}
+
+#checkbox-container {
+    display: flex;
+    align-items: center;
 }
 
 #loading {

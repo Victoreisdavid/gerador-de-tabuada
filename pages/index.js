@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { useEffect } from "react";
+import canvasSize from "canvas-size";
 
 /**
  * Gera uma tabuada
@@ -32,15 +33,32 @@ export default function Main() {
                 }, 50)
             })
         }
+        /**
+         * Testa o tamanho do canvas para ver se não atingiu o limite.
+         * @param {Boolean} avoidCrashes Define se a opção de evitar crashes está ativada.
+         * @param {Number} canvasWidth Largura do canvas
+         * @param {Number} canvasHeight Altura do canvas
+         * @returns {Boolean} Se o canvas é válido ou não
+         */
+        function Test(avoidCrashes, canvasWidth, canvasHeight) {
+            if(avoidCrashes) {
+                /* Verificando se o tamanho não passa do limite imposto pelo navegador */
+                const isValid = canvasSize.test({
+                    width: canvasWidth,
+                    height: canvasHeight
+                })
+                return isValid
+            } else {
+                return true
+            }
+        }
         generateButton.addEventListener("click", async () => {
             let Time = Date.now()
             const min = Number(document.querySelector("#minimum")?.value) || 1
             const max = Number(document.querySelector("#maximum")?.value) || 10
             const fontSize = Number(document.querySelector("#font-size")?.value) || 20
             const fontColor = document.querySelector("#font-color")?.value || "#22223b"
-            if(max > 500) {
-                return alert("O valor máximo permitido é 500, acima disso a imagem pode bugar.")
-            }
+            const avoidCrashes = document.querySelector("#avoid-crash").checked
             if(max < min) {
                 return alert("O valor mínimo é maior que o máximo")
             }
@@ -63,13 +81,13 @@ export default function Main() {
             let canvasWidth = 0
 
             /* Colocando os resultados na variável texts */
+            let t = null
             for(const key of keys) {
                 const results = operations[key]
                 const resultsKeys = Object.keys(results)
                 if(!firstY) {
                     firstY = y
                 }
-                let t = null
                 for(const resultKey of resultsKeys) {
                     const result = operations[key][resultKey]
                     const txt = `${key} x ${resultKey} = ${result}`
@@ -86,8 +104,8 @@ export default function Main() {
                     rows += 1
                     y = firstY
                     x += ctx.measureText(t).width + fontSize
-                    if(x + fontSize >= canvasWidth) {
-                        canvasWidth += (ctx.measureText(t).width + fontSize) * 2
+                    if(x + fontSize * 1.7 >= canvasWidth) {
+                        canvasWidth += (ctx.measureText(t).width + fontSize) * 1.8
                     }
                 } else {
                     rows = 0
@@ -95,6 +113,18 @@ export default function Main() {
                     y += fontSize
                     firstY = null
                 }
+            }
+
+            if(!Test(avoidCrashes, canvasWidth, canvasHeight)) {
+                image_container.innerHTML = "<p style=\"text-align: center; color: red\">Seu navegador foi protegido de um possível crash! <br/> A imagem ficou simplesmente gigante. Diminua o tamanho da fonte ou os números da tabuada e tente novamente. <br /> Você pode desmarcar a checkbox \"Evitar que o navegador trave?\" para que seu navegador não seja protegido. Mas lembre-se que isso pode bugar seu navegador e levar ele a crashar.</p>"
+                return;
+            }
+
+            const outerElement = texts.filter(txt => txt.x + fontSize * 1.7 >= canvasWidth)
+            const largest = [...texts].sort((a, b) => b.x - a.x)[0].x
+
+            if(outerElement) {
+                canvasWidth += largest / 6
             }
 
             /* Definindo altura e largura */
@@ -121,7 +151,7 @@ export default function Main() {
         <>
             <Head>
                 <title>Gerador de tabuada</title>
-                <meta name="description" content="Gere tabuadas prontas do 0 até o 500 em um piscar de olhos!"/>
+                <meta name="description" content="Gere tabuadas prontas em um piscar de olhos!"/>
                 <meta name="robots" content="index, follow"/>
             </Head>
             <header>
@@ -144,7 +174,14 @@ export default function Main() {
                     <div className="placeholder">
                         Final
                     </div>
+                    <div id="checkbox-container" title="Impede a geração de imagens gigantes que podem crashar seu navegador">
+                        <input type="checkbox" defaultChecked={true} id="avoid-crash" name="avoid-crash"/>
+                        <label htmlFor="avoid-crash">
+                            Evitar que o navegador trave?
+                        </label>
+                    </div>
                 </div>
+                <br />
                 <button id="generate">
                     Gerar tabuada
                 </button>
