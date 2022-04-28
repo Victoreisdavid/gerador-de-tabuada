@@ -2,17 +2,28 @@ import Head from "next/head";
 import { useEffect } from "react";
 import canvasSize from "canvas-size";
 
+const delay = async (time) => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            return resolve()
+        }, time)
+    })
+}
+
 /**
  * Gera uma tabuada
  * @param {Number} start Início da tabuada 
  * @param {Number} end Fim da tabuada
  * @returns {Object} Objeto da tabuada
  */
-function generate(start, end) {
+async function generate(start, end) {
     const output = {}
     let currentNumber = Number(start)
     const limit = 10
     for (let n = currentNumber; n <= end; n++) {
+        if(n % 100 == 0) {
+            await delay(1)
+        }
         output[currentNumber] = {}
         for (let num = 0; num <= limit; num++) {
             output[currentNumber][num] = currentNumber * num
@@ -26,13 +37,6 @@ export default function Main() {
     useEffect(() => {
         const image_container = document.querySelector("#image-container")
         const generateButton = document.querySelector("#generate")
-        const delay = () => {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    return resolve()
-                }, 50)
-            })
-        }
         /**
          * Testa o tamanho do canvas para ver se não atingiu o limite.
          * @param {Boolean} avoidCrashes Define se a opção de evitar crashes está ativada.
@@ -63,12 +67,12 @@ export default function Main() {
                 return alert("O valor mínimo é maior que o máximo")
             }
             image_container.innerHTML = "<div id=\"loading\"/>"
-            await delay() // Para evitar que o navegador trave
+            await delay(50) // Para evitar que o navegador trave
             const canvas = document.createElement("canvas")
             const ctx = canvas.getContext("2d")
             ctx.font = `${fontSize}px Fredoka`
             const texts = []
-            const operations = generate(min, max)
+            const operations = await generate(min, max)
             const keys = Object.keys(operations)
 
             /* Variáveis usadas na hora de posicionar o texto */
@@ -82,7 +86,18 @@ export default function Main() {
 
             /* Colocando os resultados na variável texts */
             let t = null
+            let iterations = 0;
+            let stopped = false
             for(const key of keys) {
+                if(iterations % 100 == 0) {
+                    await delay(10) // Evitando que o navegador trave
+                    if(!Test(avoidCrashes, canvasWidth || 1, canvasHeight || 1)) {
+                        image_container.innerHTML = "<p style=\"text-align: center; color: red\">Possível crash evitado!<br/> Sua imagem ultrapassou os limite antes do processamento terminar, para evitar que seu navegador trave, o processamento foi interrompido.<br/>Você pode desmarcar a checkbox \"Evitar que o navegador trave?\" para que seu navegador não seja protegido. Mas lembre-se que isso pode bugar seu navegador e levar ele a crashar.</p>"
+                        stopped = true
+                        break;
+                    }
+                }
+                iterations += 1
                 const results = operations[key]
                 const resultsKeys = Object.keys(results)
                 if(!firstY) {
@@ -114,6 +129,7 @@ export default function Main() {
                     firstY = null
                 }
             }
+            if(stopped) return;
 
             if(!Test(avoidCrashes, canvasWidth, canvasHeight)) {
                 image_container.innerHTML = "<p style=\"text-align: center; color: red\">Seu navegador foi protegido de um possível crash! <br/> A imagem ficou simplesmente gigante. Diminua o tamanho da fonte ou os números da tabuada e tente novamente. <br /> Você pode desmarcar a checkbox \"Evitar que o navegador trave?\" para que seu navegador não seja protegido. Mas lembre-se que isso pode bugar seu navegador e levar ele a crashar.</p>"
